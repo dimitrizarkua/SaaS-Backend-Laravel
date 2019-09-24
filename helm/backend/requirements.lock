@@ -1,0 +1,9 @@
+dependencies:
+- name: rabbitmq
+  repository: https://kubernetes-charts.storage.googleapis.com
+  version: 4.0.5
+- name: redis
+  repository: https://kubernetes-charts.storage.googleapis.com
+  version: 5.2.0
+digest: sha256:cb6722bcd6393ad1a6b02cb8bd277f8e09222e76bb774d71f667a5179f0736e3
+generated: 2019-01-11T10:10:36.062034947+07:00

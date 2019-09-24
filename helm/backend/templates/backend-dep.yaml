@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "backend.fullname" . }}-{{ .Values.deployments.backend.name }}
+  labels:
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    helm.sh/chart: {{ include "backend.chart" . }}
+    app.kubernetes.io/name: {{ include "backend.name" . }}-{{ .Values.deployments.backend.name }}
+    app.kubernetes.io/part-of: {{ include "backend.chart" . }}
+spec:
+  replicas: {{ .Values.deployments.backend.replicasCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "backend.name" . }}-{{ .Values.deployments.backend.name }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "backend.name" . }}-{{ .Values.deployments.backend.name }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+    spec:
+      terminationGracePeriodSeconds: 60
+      restartPolicy: {{ .Values.deployments.backend.restartPolicy }}
+      imagePullSecrets:
+        - name: {{ .Values.image.pullSecret }}
+      containers:
+        - name: {{ .Values.deployments.backend.name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - {{ .Values.deployments.backend.command | quote }}
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 3
+            failureThreshold: 1
+            successThreshold: 1
+            timeoutSeconds: 2
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 3
+            failureThreshold: 1
+            successThreshold: 1
+            timeoutSeconds: 2
+          env:
+            - name: HOST_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: HELM_RELEASE_NAME
+              value: {{ .Release.Name }}
+            - name: LOG_CHANNEL
+              value: {{ .Values.logging.backend.channel }}
+            {{- if .Values.deployments.backend.env }}
+              {{- toYaml .Values.deployments.backend.env | trim | nindent 12 }}
+            {{- end }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "backend.fullname" . }}-config
+            {{- if .Values.deployments.backend.envFrom }}
+              {{- toYaml .Values.deployments.backend.envFrom | trim | nindent 12 }}
+            {{- end }}
+          resources:
+            {{- toYaml .Values.deployments.backend.resources | nindent 12 }}
+      {{- with .Values.deployments.backend.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.deployments.backend.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.deployments.backend.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

@@ -1,0 +1,182 @@
+# Default values for backend application in development environment.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+nameOverride: ""
+fullnameOverride: ""
+
+deployments:
+  backend:
+    name: app
+    replicasCount: 1
+    restartPolicy: Always
+    command: serve
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "100m"
+      limits:
+        memory: "512Mi"
+        cpu: "1000m"
+    env: []
+    envFrom:
+    - secretRef:
+        name: backend-secrets
+    - secretRef:
+        name: oauth-keys
+    - secretRef:
+        name: cloudfront-secrets
+    nodeSelector: {}
+    tolerations: []
+    affinity:
+      nodeAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 1
+          preference:
+            matchExpressions:
+              - key: purpose
+                operator: In
+                values:
+                - testing
+  consumers:
+    name: consumers
+    replicasCount: 1
+    restartPolicy: Always
+    command: consumers
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "100m"
+      limits:
+        memory: "512Mi"
+        cpu: "1000m"
+    env: []
+    envFrom:
+    - secretRef:
+        name: backend-secrets
+    - secretRef:
+        name: oauth-keys
+    - secretRef:
+        name: cloudfront-secrets
+    nodeSelector: {}
+    tolerations: []
+    affinity:
+      nodeAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 1
+          preference:
+            matchExpressions:
+              - key: purpose
+                operator: In
+                values:
+                - testing
+
+image:
+  repository: registry.gitlab.com/steamatic_nis/backend
+  tag: training
+  pullPolicy: Always
+  pullSecret: gitlab-auth-backend
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  host: api.training.steamatic.com.au
+  annotations:
+    kubernetes.io/ingress.class: traefik
+    traefik.ingress.kubernetes.io/buffering: |
+      maxrequestbodybytes: 10485760
+      memrequestbodybytes: 2097153
+      maxresponsebodybytes: 10485761
+      memresponsebodybytes: 2097152
+      retryexpression: IsNetworkError() && Attempts() <= 2
+
+# Backend application config
+
+app:
+  env: training
+  debug: false
+  name: Steamatic
+  url: https://api.training.steamatic.com.au
+  frontend_app_url: https://training.steamatic.com.au
+  cors_origins: https://training.steamatic.com.au https://api.training.steamatic.com.au http://localhost:3000
+
+database:
+  connection: pgsql
+
+logging:
+  backend:
+    channel: datadog
+  consumers:
+    channel: datadog
+
+broadcasting:
+  driver: pusher
+
+mail:
+  driver: mailgun
+
+scout:
+  driver: elastic
+
+# Redis config
+
+redis:
+  cluster:
+    enabled: false
+
+  rbac:
+    create: false
+
+  usePassword: false
+
+  master:
+    persistence:
+      enabled: false
+    affinity:
+      nodeAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 1
+          preference:
+            matchExpressions:
+              - key: purpose
+                operator: In
+                values:
+                - testing
+  slave:
+    affinity:
+      nodeAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 1
+          preference:
+            matchExpressions:
+              - key: purpose
+                operator: In
+                values:
+                - testing
+
+rabbitmq:
+  debug: false
+
+  rbacEnabled: true
+
+  rabbitmq:
+    username: steamatic
+    password: steamatic
+
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 100m
+
+  affinity:
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 1
+        preference:
+          matchExpressions:
+            - key: purpose
+              operator: In
+              values:
+                - testing

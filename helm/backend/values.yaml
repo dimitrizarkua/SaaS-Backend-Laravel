@@ -1,0 +1,102 @@
+# Default values for backend.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+nameOverride: ""
+fullnameOverride: ""
+
+deployments:
+  backend:
+    name: app
+    replicasCount: 2
+    restartPolicy: Always
+    command: serve
+    env: []
+    envFrom: []
+    resources: {}
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+  consumers:
+    name: consumers
+    replicasCount: 2
+    restartPolicy: Always
+    command: consumers
+    env: []
+    envFrom: []
+    resources: {}
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+
+image:
+  repository: registry.gitlab.com/steamatic_nis/backend
+  tag: dev
+  pullPolicy: Always
+  pullSecret: gitlab-auth-backend
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  host: api.steamatic.com.au
+  annotations:
+    kubernetes.io/ingress.class: traefik
+
+# Backend application config
+
+app:
+  env: local
+  debug: false
+  name: Steamatic
+  url: http://localhost:8000
+  frontend_app_url: http://localhost:8000
+  cors_origins: http://localhost:3000 http://localhost:8080
+
+database:
+  connection: null
+
+logging:
+  backend:
+    channel: datadog
+  consumers:
+    channel: datadog
+
+broadcasting:
+  driver: pusher
+
+mail:
+  driver: mailgun
+
+scout:
+  driver: elastic
+
+# Redis config
+
+redis:
+  cluster:
+    enabled: false
+
+  rbac:
+    create: false
+
+  usePassword: false
+
+  master:
+    persistence:
+      enabled: false
+
+rabbitmq:
+  debug: false
+
+  rbacEnabled: true
+
+  rabbitmq:
+    username: steamatic
+    password: steamatic
+
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 100m

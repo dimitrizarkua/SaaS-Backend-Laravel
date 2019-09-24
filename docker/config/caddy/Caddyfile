@@ -1,0 +1,13 @@
+0.0.0.0:8000
+    root {$APP_HOME}/public
+    gzip
+    rewrite {
+        to {path} {path}/ /index.php?{query}
+    }
+    fastcgi / 127.0.0.1:9000 php
+
+    header / -X-Powered-By
+
+    log stdout
+    errors stderr
+    tls off

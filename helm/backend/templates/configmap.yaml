@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: {{ include "backend.fullname" . }}-config
+    labels:
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        helm.sh/chart: {{ include "backend.chart" . }}
+        app.kubernetes.io/name: {{ include "backend.name" . }}
+data:
+    APP_ENV: {{ .Values.app.env }}
+    APP_DEBUG: {{ .Values.app.debug | squote }}
+    APP_URL: {{ .Values.app.url }}
+    APP_NAME: {{ .Values.app.name }}
+    FRONTEND_APP_URL: {{ .Values.app.frontend_app_url }}
+    CORS_ORIGINS: {{ .Values.app.cors_origins }}
+    DB_CONNECTION: {{ .Values.database.connection }}
+    {{ if (.Values.broadcasting.driver) and ne .Values.broadcasting.driver "null" }}
+    BROADCAST_DRIVER: {{ .Values.broadcasting.driver }}
+    {{ end }}
+    MAIL_DRIVER: {{ .Values.mail.driver }}
+    SCOUT_DRIVER: {{ .Values.scout.driver }}
+    RABBITMQ_LOGIN: {{ .Values.rabbitmq.rabbitmq.username }}
+    RABBITMQ_PASSWORD: {{ .Values.rabbitmq.rabbitmq.password }}

@@ -1,0 +1,268 @@
+# Pipelines:
+
+## dev: test -> build & push -> deploy -> cleanup
+## training, staging, master: build & push -> deploy -> cleanup
+## (all other) feature branches: test (on shared runners)
+
+# Stages
+
+stages:
+  - test
+  - build
+  - deploy
+
+# Variables
+
+variables:
+  IMAGE: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_NAME}
+  IMAGE_SHA: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHORT_SHA}
+  POSTGRES_IMAGE: 'postgres:10.6-alpine'
+  RABBITMQ_IMAGE: 'rabbitmq:3.6-alpine'
+  REDIS_IMAGE: 'redis:4.0-alpine'
+  TEST_BACKEND_APP_KEY: 'base64:R0JEMVRiTk9QRzNTLXFIeHpQa1N2b3E4WWZFYzBmX0I='
+  TEST_POSTGRES_DB_NAME: stematic_nis_test
+  TEST_POSTGRES_PASSWORD: test
+  TEST_POSTGRES_USER: test
+  TEST_AMQP_USERNAME: steamatic
+  TEST_AMQP_PASSWORD: steamatic
+  HELM_CHARTS_DIR: ./helm
+  HELM_CHART_NAME: backend
+
+# Templates
+
+.test_template: &test_definition
+  stage: test
+  image: callstats/docker-with-bash
+  variables:
+    DOCKER_DRIVER: overlay2
+  services:
+    - docker:dind
+  script:
+    - source ./docker/scripts/ci-env-setup.sh
+    - |
+      Print_CI_Message "BUILDING IMAGE FOR TESTS, EVNIRONMENT: ${ENVIRONMENT}"
+      docker login -u ${CI_REGISTRY_USER} -p ${CI_REGISTRY_PASSWORD} ${CI_REGISTRY}
+      Print_CI_Message "PREPARING CACHE IMAGES"
+      CACHE_FROM=""
+      Print_CI_Message "SUPERVISORD"
+      CACHE_FROM_IMAGE="${CI_REGISTRY_IMAGE}/supervisord:cache"
+      if ! docker pull ${CACHE_FROM_IMAGE} ; then
+          docker build --target supervisor-builder -t ${CACHE_FROM_IMAGE} .
+          docker push ${CACHE_FROM_IMAGE}
+      fi
+      CACHE_FROM="${CACHE_FROM} --cache-from ${CACHE_FROM_IMAGE}"
+      CACHE_FROM_IMAGE="${CI_REGISTRY_IMAGE}:dev"
+      if docker pull ${CACHE_FROM_IMAGE} ; then
+        CACHE_FROM="${CACHE_FROM} --cache-from ${CACHE_FROM_IMAGE}"
+      fi
+      Print_CI_Message "MAIN"
+      export TEST_BUILD_TAG="${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA}"
+      docker build ${CACHE_FROM} --target test -t ${TEST_BUILD_TAG} .
+    - |
+      Print_CI_Message "RUNNING CODE SNIFFER"
+      docker run \
+        --rm \
+        ${TEST_BUILD_TAG} code_sniffer
+    - |
+      Print_CI_Message "SPINNING UP SUPPORTING SERVICES"
+      docker run \
+        --hostname postgres \
+        --name ${CI_PROJECT_NAME}-postgres-${CI_COMMIT_SHA} \
+        --env POSTGRES_USER=${TEST_POSTGRES_USER} \
+        --env POSTGRES_PASSWORD=${TEST_POSTGRES_PASSWORD} \
+        --env POSTGRES_DB=${TEST_POSTGRES_DB_NAME} \
+        -d ${POSTGRES_IMAGE}
+      docker run \
+        --hostname rabbitmq \
+        --name ${CI_PROJECT_NAME}-rabbitmq-${CI_COMMIT_SHA} \
+        --env RABBITMQ_DEFAULT_USER=${TEST_AMQP_USERNAME} \
+        --env RABBITMQ_DEFAULT_PASS=${TEST_AMQP_PASSWORD} \
+        --env RABBITMQ_DEFAULT_VHOST=${TEST_AMQP_VHOST} \
+        -d ${RABBITMQ_IMAGE}
+      docker run \
+        --hostname redis \
+        --name ${CI_PROJECT_NAME}-redis-${CI_COMMIT_SHA} \
+        -d ${REDIS_IMAGE}
+      sleep 5
+    - |
+      Print_CI_Message "RUNNING UNIT-TESTS"
+      docker run \
+        --rm \
+        --link ${CI_PROJECT_NAME}-postgres-${CI_COMMIT_SHA}:postgres \
+        --link ${CI_PROJECT_NAME}-rabbitmq-${CI_COMMIT_SHA}:rabbitmq \
+        --link ${CI_PROJECT_NAME}-redis-${CI_COMMIT_SHA}:redis \
+        --env APP_KEY=${TEST_BACKEND_APP_KEY} \
+        --env APP_ENV=testing \
+        --env DB_CONNECTION=pgsql \
+        --env DB_HOST=postgres \
+        --env DB_PORT=5432 \
+        --env DB_USERNAME=${TEST_POSTGRES_USER} \
+        --env DB_PASSWORD=${TEST_POSTGRES_PASSWORD} \
+        --env DB_DATABASE=${TEST_POSTGRES_DB_NAME} \
+        --env RABBITMQ_HOST=rabbitmq \
+        --env RABBITMQ_PORT=5672 \
+        --env RABBITMQ_LOGIN=${TEST_AMQP_USERNAME} \
+        --env RABBITMQ_PASSWORD=${TEST_AMQP_PASSWORD} \
+        --env REDIS_HOST=redis \
+        --env REDIS_PORT=6379 \
+        --env SCOUT_DRIVER=null \
+        --env SCOUT_QUEUE=false \
+        ${TEST_BUILD_TAG} test
+  after_script:
+    - docker rm -f ${CI_PROJECT_NAME}-postgres-${CI_COMMIT_SHA} || true
+    - docker rm -f ${CI_PROJECT_NAME}-rabbitmq-${CI_COMMIT_SHA} || true
+    - docker rm -f ${CI_PROJECT_NAME}-redis-${CI_COMMIT_SHA} || true
+
+.deploy_template: &deploy_definition
+  stage: deploy
+  image: dtzar/helm-kubectl:2.12.3
+  before_script:
+    - source ./docker/scripts/ci-env-setup.sh
+    - |
+      if [[ ! -z ${STEAMATIC_KUBECONFIG} ]] ; then
+        Print_CI_Message "CONFIGURING HELM"
+        export KUBECONFIG=/tmp/config
+        echo ${STEAMATIC_KUBECONFIG} | base64 -d > ${KUBECONFIG}
+
+        helm init --client-only --service-account tiller --kubeconfig ${KUBECONFIG}
+        helm repo add stable https://kubernetes-charts.storage.googleapis.com/
+        helm repo update
+      fi
+  script:
+    - |
+      if [[ ! -z ${KUBECONFIG} ]] ; then
+        K8S_NAMESPACE=`echo "${CI_ENVIRONMENT_NAME}" | awk '{ print tolower($1) }'`
+        HELM_RELEASE_NAME="steamatic-${K8S_NAMESPACE}-${CI_PROJECT_NAME}"
+
+        Print_CI_Message "NAMESPACE: ${K8S_NAMESPACE}, RELEASE: ${HELM_RELEASE_NAME}"
+
+        cd ${HELM_CHARTS_DIR}
+        HELM_VALUES_FILE="./${HELM_CHART_NAME}/values/values.${K8S_NAMESPACE}.yaml"
+        if [[ ! -f ${HELM_VALUES_FILE} ]]; then
+          HELM_VALUES_FILE="./${HELM_CHART_NAME}/values.yaml"
+        fi
+        Print_CI_Message "VALUES FILE: ${HELM_VALUES_FILE}"
+        helm dependency build ${HELM_CHART_NAME}
+        helm upgrade -i \
+          --namespace ${K8S_NAMESPACE} \
+          --tiller-namespace ${K8S_NAMESPACE} \
+          --kubeconfig ${KUBECONFIG} \
+          --values ${HELM_VALUES_FILE} \
+          --set image.tag=${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHORT_SHA} \
+          --wait \
+          ${HELM_RELEASE_NAME} \
+          ${HELM_CHART_NAME} || \
+        (kubectl get events \
+          -n ${K8S_NAMESPACE} \
+          --sort-by='{.lastTimestamp}' ; \
+         helm rollback \
+          --kubeconfig ${KUBECONFIG} \
+          --tiller-namespace ${K8S_NAMESPACE} \
+          ${HELM_RELEASE_NAME} 0 ; \
+           exit 1)
+      else
+        Print_CI_Message "KUBECONFIG is not defined, skipping deployment to k8s."
+      fi
+  tags:
+    - shared
+    - docker
+
+### Test dev branch
+
+test:
+  <<: *test_definition
+  only:
+    - dev
+  tags:
+    - shared
+    - docker
+
+### Build image (for dev, staging and master branches) and then push to registry
+
+build:
+  stage: build
+  image: callstats/docker-with-bash
+  variables:
+    DOCKER_DRIVER: overlay2
+  services:
+    - docker:dind
+  script:
+    - source ./docker/scripts/ci-env-setup.sh
+    - |
+      Print_CI_Message "BUILDING RELEASE IMAGE FOR ENVIRONMENT: ${ENVIRONMENT}"
+      docker login -u ${CI_REGISTRY_USER} -p ${CI_REGISTRY_PASSWORD} ${CI_REGISTRY}
+      Print_CI_Message "PREPARING CACHE IMAGES"
+      CACHE_FROM=""
+      Print_CI_Message "SUPERVISORD"
+      CACHE_FROM_IMAGE="${CI_REGISTRY_IMAGE}/supervisord:cache"
+      if ! docker pull ${CACHE_FROM_IMAGE} ; then
+          docker build --target supervisor-builder -t ${CACHE_FROM_IMAGE} .
+          docker push ${CACHE_FROM_IMAGE}
+      fi
+      CACHE_FROM="${CACHE_FROM} --cache-from ${CACHE_FROM_IMAGE}"
+      CACHE_FROM_IMAGE="${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_NAME}"
+      if docker pull ${CACHE_FROM_IMAGE} ; then
+        CACHE_FROM="${CACHE_FROM} --cache-from ${CACHE_FROM_IMAGE}"
+      fi
+      Print_CI_Message "MAIN"
+      docker build ${CACHE_FROM} --target production -t ${IMAGE} -t ${IMAGE_SHA} .
+    - |
+      Print_CI_Message "PUSHING IMAGE TO REGISTRY"
+      docker push ${IMAGE}
+      docker push ${IMAGE_SHA}
+  only:
+    - dev
+    - staging
+    - training
+    - master
+  tags:
+    - shared
+    - docker
+
+### Run tests for feature branches on the shared builders
+
+test_branches:
+  <<: *test_definition
+  except:
+    - dev
+    - staging
+    - training
+    - master
+    - tags
+  tags:
+    - shared
+    - docker
+
+### Deploy
+
+deploy_dev:
+  <<: *deploy_definition
+  environment:
+    name: Development
+    url: 'http://dev.steamatic.com.au'
+  only:
+    - dev
+
+deploy_staging:
+  <<: *deploy_definition
+  environment:
+    name: Staging
+    url: 'http://staging.steamatic.com.au'
+  only:
+    - staging
+
+deploy_training:
+  <<: *deploy_definition
+  environment:
+    name: Training
+    url: 'http://training.steamatic.com.au'
+  only:
+    - training
+
+deploy_production:
+  <<: *deploy_definition
+  environment:
+    name: Production
+    url: 'http://steamatic.com.au'
+  only:
+    - master

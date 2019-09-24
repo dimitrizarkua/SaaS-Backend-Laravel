@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "backend.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "backend.name" . }}
+    helm.sh/chart: {{ include "backend.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - name: http
+      port: {{ .Values.service.port }}
+      protocol: TCP
+      targetPort: http
+  selector:
+    app.kubernetes.io/name: {{ include "backend.name" . }}-{{ .Values.deployments.backend.name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}

@@ -1,0 +1,16 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ include "backend.fullname" . }}-ingress
+  annotations:
+    {{- if .Values.ingress.annotations }}
+      {{- toYaml .Values.ingress.annotations | trim | nindent 4 }}
+    {{- end }}
+spec:
+  rules:
+    - host: {{ .Values.ingress.host }}
+      http:
+        paths:
+          - backend:
+              serviceName: {{ include "backend.fullname" . }}
+              servicePort: {{ .Values.service.port }}

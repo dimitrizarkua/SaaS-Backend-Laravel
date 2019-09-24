@@ -1,0 +1,148 @@
+permission,description,accounts,administrator,agency,branch_franchise_manager,business_development,cco,cso_am,executive,crew,after_hours_crew,team_leader,warehouse,operations,scheduler
+users.view,Can view list of users and full information about each user,,yes,,,,,,yes,,,,,,
+users.create,Can create user profile,,yes,,,,,,yes,,,,,,
+users.update,Can update user profile,,yes,,,,,,yes,,,,,,
+users.delete,Can delete users,,yes,,,,,,yes,,,,,,
+roles.view,Can view list of all roles and full information about each one,,yes,,,,,,,,,,,,
+roles.update,Can update existing role,,yes,,,,,,,,,,,,
+roles.create,Can create new role,,yes,,,,,,,,,,,,
+roles.delete,Can delete existing role,,yes,,,,,,,,,,,,
+permissions.view,Can view list of all permissions and full information about each one,,yes,,,,,,,,,,,,
+tags.view,Can view list of all tags and full information about each one,,yes,,yes,,,,yes,,,,,,
+tags.update,Can update existing tag,,yes,,yes,,,,yes,,,,,,
+tags.create,Can create new tag,,yes,,yes,,,,yes,,,,,,
+tags.delete,Can delete existing tag,,yes,,yes,,,,yes,,,,,,
+notes.view,Can view list of all notes and full information about each one,yes,yes,,yes,yes,yes,yes,yes,yes,yes,yes,yes,yes,yes
+notes.create,Can create new note,yes,yes,,yes,yes,yes,yes,yes,yes,yes,yes,yes,yes,yes
+notes.update,Can update existing note,yes,yes,,yes,yes,yes,yes,yes,yes,yes,yes,yes,yes,yes
+notes.delete,Can delete existing note,yes,yes,,yes,yes,yes,yes,yes,yes,yes,yes,yes,yes,yes
+messages.view,Can view list of all notes and full information about each one,yes,yes,,yes,yes,yes,yes,yes,,,,yes,yes,yes
+messages.manage,"Can create new message, update and delete draft messages.",yes,yes,,yes,yes,yes,yes,yes,,,,yes,yes,yes
+documents.create,Can create new document,yes,yes,,yes,yes,yes,yes,yes,yes,yes,yes,yes,yes,yes
+documents.view,Can view existing document info,yes,yes,,yes,yes,yes,yes,yes,yes,yes,yes,yes,yes,yes
+documents.download,Can download documents,yes,yes,,yes,yes,yes,yes,yes,yes,yes,yes,yes,yes,yes
+documents.delete,Can delete existing document,yes,yes,,yes,yes,yes,yes,yes,yes,yes,yes,yes,yes,yes
+countries.view,Can view list of all countries and full information about each one,,yes,,,yes,,,yes,,,,,,
+countries.create,Can create new country,,yes,,,yes,,,yes,,,,,,
+countries.delete,Can delete existing country,,yes,,,yes,,,yes,,,,,,
+states.view,Can view list of all states and full information about each one,,yes,,,yes,,,yes,,,,,,
+states.update,Can update existing state,,yes,,,yes,,,yes,,,,,,
+states.create,Can create new state,,yes,,,yes,,,yes,,,,,,
+states.delete,Can delete existing state,,yes,,,yes,,,yes,,,,,,
+suburbs.view,Can view list of all suburbs and full information about each one,,yes,,,yes,,,yes,,,,,,
+suburbs.update,Can update existing suburb,,yes,,,yes,,,yes,,,,,,
+suburbs.create,Can create new suburb,,yes,,,yes,,,yes,,,,,,
+suburbs.delete,Can delete existing suburb,,yes,,,yes,,,yes,,,,,,
+addresses.view,Can view list of all addresses and full information about each one,yes,yes,,yes,yes,yes,yes,yes,,,,yes,yes,yes
+addresses.update,Can update existing address,yes,yes,,yes,yes,yes,yes,yes,,,,yes,yes,yes
+addresses.create,Can create new address,yes,yes,,yes,yes,yes,yes,yes,,,,yes,yes,yes
+addresses.delete,Can delete existing address,yes,yes,,yes,yes,yes,yes,yes,,,,yes,yes,yes
+contacts.view,Can view list of all contacts and full information about each one,yes,yes,,yes,yes,yes,yes,yes,yes,yes,yes,yes,yes,yes
+contacts.update,Can update existing contact,yes,yes,,yes,yes,yes,yes,yes,,,,,,
+contacts.create,Can create new contact,yes,yes,,yes,yes,yes,yes,yes,,yes,,,,
+contacts.delete,Can delete existing contact,yes,yes,,yes,yes,yes,yes,yes,,,,,,
+meetings.create,Can create new meetings,yes,yes,,yes,yes,yes,yes,yes,,,,,,
+meetings.view,Can view list of all meetings and full information about each one,yes,yes,,yes,yes,yes,yes,yes,,,,,,
+meetings.delete,Can delete existing meeting,yes,yes,,yes,yes,,,yes,,,,,,
+teams.create,Can create new team,,yes,,,,,,yes,,,,,,
+teams.update,Can update existing team,,yes,,,,,,yes,,,,,,
+teams.view,Can view list of all team and full information about each one,,yes,,,,,,yes,,,,,,
+teams.delete,Can delete existing team,,yes,,,,,,yes,,,,,,
+teams.modify_members,Can add and remove users from team,,yes,,,,,,yes,,,,,,
+locations.view,"Can view list of all location, information about each one, their members and suburbs",,yes,,yes,,,,yes,,,,,,
+locations.create,Can create new location,,yes,,,,,,yes,,,,,,
+locations.update,Can update existing location,,yes,,,,,,yes,,,,,,
+locations.modify_members,Can add and remove users from locations members,,yes,,,,,,yes,,,,,,
+locations.modify_suburbs,Can add and remove suburbs from locations,,yes,,,,,,yes,,,,,,
+jobs.view,Can view simple information about job,yes,yes,,yes,yes,yes,yes,yes,yes,yes,yes,yes,yes,yes
+jobs.manage_inbox,Can pin/unpin snooze/unsnooze jobs in the inbox,yes,yes,,yes,yes,yes,yes,yes,,,,yes,yes,yes
+jobs.manage_tags,Can add and remove tags from jobs,yes,yes,,yes,yes,yes,yes,yes,,,,yes,yes,yes
+jobs.assign_staff,Can assign and unassign users and teams from jobs,yes,yes,,yes,yes,yes,yes,yes,,,,yes,yes,yes
+jobs.create,Can create new job,yes,yes,,yes,yes,yes,yes,yes,yes,yes,yes,yes,yes,yes
+jobs.update,Can update existing job,yes,yes,,yes,yes,yes,yes,yes,,,,,yes,yes
+jobs.delete,Can delete existing job,yes,yes,,yes,yes,yes,yes,yes,,,,,yes,yes
+jobs.manage_contacts,"Can assign and unassign contacts from jobs, manage existing assignments",yes,yes,,yes,yes,yes,yes,yes,yes,,,,yes,yes
+jobs.manage_notes,Can add and delete job notes,yes,yes,,yes,yes,yes,yes,yes,yes,,,,yes,yes
+jobs.manage_messages,Can add and delete job messages,yes,yes,,yes,yes,yes,yes,yes,,,,yes,yes,yes
+jobs.manage_messages_detach,,,yes,,,,,,yes,,,,,,
+jobs.manage_jobs,Can link and unlink jobs,yes,yes,,yes,yes,yes,yes,yes,,,,yes,yes,yes
+jobs.tasks.view,Can view and browse job tasks,yes,yes,,yes,yes,yes,yes,yes,yes,yes,yes,yes,yes,yes
+jobs.tasks.manage,Can manage job tasks,yes,yes,,yes,yes,yes,yes,yes,,,,yes,yes,yes
+jobs.manage_recurring,Allows to manage recurring jobs,yes,yes,,yes,yes,yes,yes,yes,,,,,,
+jobs.usage.materials.create,Allows to create new job material,yes,yes,,yes,yes,yes,yes,yes,yes,,yes,,yes,
+jobs.usage.materials.update,Allows to update job material,yes,yes,,yes,yes,yes,yes,yes,yes,,yes,,yes,
+jobs.usage.materials.delete,Allows to delete job material,yes,yes,,yes,yes,yes,yes,yes,yes,,yes,,yes,
+jobs.usage.materials.manage,Allows to manage job material,yes,yes,,yes,yes,yes,yes,yes,yes,,yes,,yes,
+jobs.usage.labour.create,Allows to create new job labour,yes,yes,,yes,yes,yes,yes,yes,yes,,yes,,yes,
+jobs.usage.labour.update,Allows to update job labour,yes,yes,,yes,yes,yes,yes,yes,yes,,yes,,yes,
+jobs.usage.labour.delete,Allows to delete job labour,yes,yes,,yes,yes,yes,yes,yes,yes,,yes,,yes,
+jobs.usage.labour.manage,Allows to manage job labour,yes,yes,,yes,yes,yes,yes,yes,yes,,yes,,yes,
+jobs.usage.view,Can view job reimbursements,yes,yes,,yes,yes,yes,yes,yes,yes,,yes,,yes,
+jobs.usage.equipment.create,Allows to create job equipment entries,yes,yes,,yes,yes,yes,yes,yes,yes,,yes,,yes,
+jobs.usage.equipment.update,Allows to update job equipment entries,yes,yes,,yes,yes,yes,yes,yes,yes,,yes,,yes,
+jobs.usage.equipment.delete,Allows to delete job equipment entries,yes,yes,,yes,yes,yes,yes,yes,yes,,yes,,yes,
+jobs.usage.equipment.manage,Allows to manage job equipment entries that were created other users,yes,yes,,yes,yes,yes,yes,yes,yes,,yes,,,
+jobs.areas.manage,Can manage job areas,yes,yes,,yes,yes,yes,yes,yes,yes,,yes,,,
+management.search.index,Allows to import the models into the search index,,yes,,,,,,,,,,,,
+management.search.flush,Allows to flush all of the model's records from the index,,yes,,,,,,,,,,,,
+management.system.settings,Allows to manage system settings,,yes,,,,,,yes,,,,,,
+management.jobs.settings,Allows to manage jobs settings,,yes,,,,,,yes,,,,,,
+management.equipment,Allows to manage equipment,,yes,,,,,,yes,,,,,,
+management.seed,Allows to run existing database seeder,,yes,,,,,,yes,,,,,,
+photos.create,Can create new photo,yes,yes,,yes,yes,yes,yes,yes,yes,yes,yes,yes,yes,yes
+photos.view,Can view and download existing photo,yes,yes,,yes,yes,yes,yes,yes,yes,yes,yes,yes,yes,yes
+photos.update,Can delete existing photo,yes,yes,,yes,yes,yes,yes,yes,yes,yes,yes,yes,yes,yes
+photos.delete,Can delete existing photo,yes,yes,,yes,yes,yes,yes,yes,yes,yes,yes,yes,yes,yes
+finance.accounting_organizations.manage,Allows to manage accounting organizations,,yes,,,,,,,,,,,,
+finance.gl_accounts.manage,Allows to manage GL Account,yes,yes,,,,,,,,,,,,
+finance.gl_accounts.view,Can view GL accounts,yes,yes,,,,,,yes,,,,,,
+finance.gl_accounts.reports.view,Can view GL account reports,yes,yes,,,,,,yes,,,,,,
+finance.gs_codes.manage,Allows to manage GS codes,yes,yes,,,,,,,,,,,,
+finance.gs_codes.view,Can view GS codes,yes,yes,,,,,,yes,,,,,,
+finance.payments.create,Allows to create a new Payment,yes,yes,,,,,,yes,,,,,,
+finance.payments.view,Allows to view payment(s),yes,yes,,,,,,yes,,,,,,
+finance.payments.receive,Allows to receive payment(s),yes,yes,,,,,,yes,,,,,,
+finance.payments.transfers.receive,Allows to receive payment(s) from HQ to branch/franchise,yes,yes,,,,,,,,,,,,
+finance.payments.forward,Allows to forward a payment to branch/franchise.,yes,yes,,,,,,,,,,,,
+finance.credit_notes.manage,Allows to manage a Credit Note,yes,yes,,yes,yes,yes,yes,yes,,,,,,
+finance.credit_notes.view,Allows to view a Credit Note,yes,yes,,yes,yes,yes,yes,yes,,,,yes,yes,yes
+finance.credit_notes.manage_locked,Can manage locked credit note except already approved,yes,yes,,yes,,,,yes,,,,,,
+operations.staff.view,Can view and browse staff,yes,yes,,yes,yes,yes,yes,yes,,,,yes,yes,yes
+operations.vehicles.view,Can view and browse vehicles,yes,yes,,yes,,yes,yes,yes,,,,yes,yes,yes
+operations.vehicles.manage,"Can edit, update and delete vehicles",,yes,,yes,,yes,yes,yes,,,,yes,yes,yes
+operations.vehicles.change_status,Can change status of a vehicle,,yes,,yes,,yes,yes,yes,,,,yes,yes,yes
+operations.tasks.view,Can view and browse job tasks,yes,yes,,yes,yes,yes,yes,yes,,,,yes,yes,yes
+operations.runs.view,Can view and browse job runs,yes,yes,,yes,,yes,yes,yes,,,,yes,yes,yes
+operations.runs.manage,"Can edit, update and delete job runs",,yes,,yes,,,yes,yes,,,,,yes,yes
+operations.runs_templates.view,Can view and browse run templates,,yes,,,,,,yes,,,,,,yes
+operations.runs_templates.manage,"Can edit, update and delete run templates",,yes,,,,,,yes,,,,,,yes
+finance.purchase_orders.view,Allows to view purchase order,yes,yes,,yes,yes,yes,yes,yes,,,,yes,yes,yes
+finance.purchase_orders.manage,Allows to manage purchase order,yes,yes,,yes,yes,yes,yes,yes,,,,,,
+finance.purchase_orders.manage_locked,Allows to manage locked (not approved) purchase order,yes,yes,,yes,,,,yes,,,,,,
+finance.invoices.view,Allows to view invoices,yes,yes,,yes,yes,yes,yes,yes,,,,yes,yes,yes
+finance.invoices.manage,Allows to manage invoices,yes,yes,,yes,yes,yes,yes,yes,,,,,,
+finance.invoices.manage_locked,Allows to modify locked invoices,yes,yes,,yes,,,,yes,,,,,,
+finance.invoices.reports.view,Allows to view invoices payment report,yes,yes,,yes,yes,yes,yes,yes,,,,,,
+finance.financial.reports.view,Allows to view financial volume report,yes,yes,,yes,yes,,yes,yes,,,,,,
+usage_and_actuals.insurer_contracts.view,Can view insurer contracts,,yes,,,,,,,,,,,,
+usage_and_actuals.insurer_contracts.manage,Can manage insurer contracts,,yes,,,,,,,,,,,,
+management.materials.measure_units,Can manage measure units,,yes,,,,,,,,,,,,
+management.materials,Can manage materials,,yes,,,,,,yes,,,,,,
+labour.view,Can view labour types,,yes,,,,,,yes,,,,,,
+management.jobs.labour,Can manage labour types,,yes,,,,,,yes,,,,,,
+allowances.view,Can view allowance types,yes,yes,,,,,,yes,,,,,,
+management.jobs.allowances,Can manage allowance types,yes,yes,,,,,,yes,,,,,,
+laha.view,Can view laha compensations,yes,yes,,yes,yes,yes,yes,yes,,,,,yes,yes
+management.jobs.laha,Can manage laha compensations,yes,yes,,yes,,,yes,yes,,,,,,
+jobs.usage.laha.manage, Can manage job laha compensations,yes,yes,,yes,yes,,yes,yes,,,,,,yes
+jobs.usage.laha.approve,Can approve laha compensations,yes,yes,,yes,,,,yes,,,,,,
+jobs.usage.allowances.manage,Can manage job allowances,yes,yes,,yes,yes,,yes,yes,,,,,yes,yes
+jobs.usage.allowances.approve,Can approve allowances,yes,yes,,yes,,,,yes,,,,,,
+jobs.usage.reimbursements.manage,Can manage job reimbursements,yes,yes,,yes,,yes,yes,yes,,,,,yes,yes
+jobs.usage.reimbursements.approve,Can approve reimbursement compensations,yes,yes,,yes,,,,yes,,,,,,
+equipment.view,Allows to view equipment,yes,yes,,,,,,,,,,,,
+equipment.notes.edit,Allows to attach/detach note to/from equipment,,yes,,yes,,,,,,,,yes,yes,
+assessment_reports.view,Can view assessment reports,yes,yes,,yes,yes,yes,yes,yes,,,,,,
+assessment_reports.manage,Can manage assessment reports,yes,yes,,yes,yes,yes,yes,yes,,,,,,
+assessment_reports.approve,Allows to approve assessment reports,yes,yes,,yes,yes,,yes,yes,,,,,,
+assessment_reports.manage_cancelled,Allows to change status of cancelled assessment reports,yes,yes,,yes,yes,,yes,yes,,,,,,

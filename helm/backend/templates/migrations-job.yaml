@@ -1,0 +1,43 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "{{ .Release.Name }}-run-db-schema-migrations"
+  labels:
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-1"
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  backoffLimit: 1
+  template:
+    metadata:
+      name: "{{ .Release.Name }}-run-db-schema-migrations"
+      labels:
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        helm.sh/chart: "{{ .Chart.Name }}-{{.Chart.Version}}"
+    spec:
+      restartPolicy: Never
+      imagePullSecrets:
+        - name: {{ .Values.image.pullSecret }}
+      containers:
+        - name: "pre-upgrade-run-db-schema-migrations"
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          args: ["run_migrations"]
+          env:
+            - name: APP_ENV
+              value: {{ .Values.app.env }}
+            - name: APP_DEBUG
+              value: {{ .Values.app.debug | squote }}
+            - name: DB_CONNECTION
+              value: {{ .Values.database.connection }}
+            {{- if .Values.deployments.backend.env }}
+              {{- toYaml .Values.deployments.backend.env | trim | nindent 12 }}
+            {{- end }}
+          {{- if .Values.deployments.backend.envFrom }}
+          envFrom:
+            {{- toYaml .Values.deployments.backend.envFrom | trim | nindent 12 }}
+          {{- end }}

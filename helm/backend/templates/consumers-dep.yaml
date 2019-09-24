@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "backend.fullname" . }}-{{ .Values.deployments.consumers.name }}
+  labels:
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    helm.sh/chart: {{ include "backend.chart" . }}
+    app.kubernetes.io/name: {{ include "backend.name" . }}-{{ .Values.deployments.consumers.name }}
+    app.kubernetes.io/part-of: {{ include "backend.chart" . }}
+spec:
+  replicas: {{ .Values.deployments.consumers.replicasCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "backend.name" . }}-{{ .Values.deployments.consumers.name }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "backend.name" . }}-{{ .Values.deployments.consumers.name }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+    spec:
+      terminationGracePeriodSeconds: 60
+      restartPolicy: {{ .Values.deployments.consumers.restartPolicy }}
+      imagePullSecrets:
+        - name: {{ .Values.image.pullSecret }}
+      containers:
+        - name: {{ .Values.deployments.consumers.name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - {{ .Values.deployments.consumers.command | quote }}
+          readinessProbe:
+            periodSeconds: 3
+            failureThreshold: 1
+            successThreshold: 1
+            initialDelaySeconds: 10
+            exec:
+              command:
+                - cat
+                - supervisord.pid
+          livenessProbe:
+            periodSeconds: 3
+            failureThreshold: 1
+            successThreshold: 1
+            initialDelaySeconds: 10
+            exec:
+              command:
+                - ./docker/scripts/consumers-liveness.sh
+          env:
+            - name: HOST_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: HELM_RELEASE_NAME
+              value: {{ .Release.Name }}
+            - name: LOG_CHANNEL
+              value: {{ .Values.logging.consumers.channel }}
+            {{- if .Values.deployments.consumers.env }}
+              {{- toYaml .Values.deployments.consumers.env | trim | nindent 12 }}
+            {{- end }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "backend.fullname" . }}-config
+            {{- if .Values.deployments.consumers.envFrom }}
+              {{- toYaml .Values.deployments.consumers.envFrom | trim | nindent 12 }}
+            {{- end }}
+          resources:
+            {{- toYaml .Values.deployments.consumers.resources | nindent 12 }}
+      {{- with .Values.deployments.consumers.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.deployments.consumers.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.deployments.consumers.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
